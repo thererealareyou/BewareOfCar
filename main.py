@@ -85,15 +85,16 @@ def run_make_manual(args):
         words = args.text.split()
         mid = len(words) // 2
         top, bottom = " ".join(words[:mid]), " ".join(words[mid:])
-    
-    if args.image:
-        src = os.path.join(config.DIR_PROCESSED_IMAGES, args.image)
-    else:
-        imgs = [f for f in os.listdir(config.DIR_PROCESSED_IMAGES) if f.lower().endswith(('.jpg', '.png'))]
-        if not imgs: return
-        src = os.path.join(config.DIR_PROCESSED_IMAGES, random.choice(imgs))
-    res = processor.create_meme(src, top, bottom)
-    if res: logging.info(f"Создан: {res}")
+
+    for i in range(10):
+        if args.image:
+            src = os.path.join(config.DIR_PROCESSED_IMAGES, args.image)
+        else:
+            imgs = [f for f in os.listdir(config.DIR_PROCESSED_IMAGES) if f.lower().endswith(('.jpg', '.png'))]
+            if not imgs: return
+            src = os.path.join(config.DIR_PROCESSED_IMAGES, random.choice(imgs))
+        res = processor.create_meme(src, top, bottom)
+        if res: logging.info(f"Создан: {res}")
 
 def run_process_images(args):
     logging.info(f"--- ОБРАБОТКА ИЗОБРАЖЕНИЙ ---")

@@ -36,12 +36,14 @@ class MemeGenerator:
         if (not base_prompt or add_random_word) and prompt_file:
             prompts = self._prepare_prompts(prompt_file)
 
+        print(prompts)
+
         generated_sentences = []
 
         gen_params = {
-            'max_new_tokens': random.randint(15, 40),
+            'max_new_tokens': random.randint(15, 100),
             'top_k': 2000,
-            'repetition_penalty': 5.0,
+            'repetition_penalty': 2.5,
             'top_p': 0.98,
             'do_sample': True,
             'num_return_sequences': 1,
@@ -52,7 +54,7 @@ class MemeGenerator:
         print(f"Начинаю генерацию {amount} мемов...")
 
         attempts = 0
-        max_attempts = amount * 5
+        max_attempts = amount * 2
 
         while len(generated_sentences) < amount and attempts < max_attempts:
             attempts += 1
@@ -77,7 +79,7 @@ class MemeGenerator:
                 start_phrase = self.tokenizer.bos_token if self.tokenizer.bos_token else " "
             # ---------------------
 
-            input_ids = self.tokenizer.encode(start_phrase, return_tensors="pt").to(self.device)
+            input_ids = self.tokenizer.encode(start_phrase.capitalize(), return_tensors="pt").to(self.device)
 
             try:
                 # Генерация напрямую через transformers без кастомных процессоров
@@ -92,7 +94,6 @@ class MemeGenerator:
                 print(f"Ошибка при генерации: {e}")
                 continue
 
-            # Обрабатываем сгенерированные последовательности
             for output in outputs:
                 text = self.tokenizer.decode(output, skip_special_tokens=True)
                 cleaned = self._clean_text(text)
@@ -111,13 +112,15 @@ class MemeGenerator:
 
         return [self._split_sentence_by_tag(s) for s in generated_sentences]
 
-
-    def _prepare_prompts(self, file_path: str) -> list:
-        # Здесь должна быть ваша логика загрузки промптов из файла
+    @staticmethod
+    def _prepare_prompts(file_path: str) -> list:
+        unique_words = set()
         if os.path.exists(file_path):
             with open(file_path, 'r', encoding='utf-8') as f:
-                return [line.strip() for line in f if line.strip()]
-        return []
+                for line in f:
+                    unique_words.update(line.strip().split())
+
+        return list(unique_words)
 
     @staticmethod
     def _clean_text(text: str) -> str:
